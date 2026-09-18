@@ -1,114 +1,191 @@
 import json
+import re
+import unicodedata
 from bilan_core import (
-    load_ocr_pages, get_page_size_at_300dpi, polygon_to_bbox_normalized,
-    search_text_exact, search_text_fuzzy, find_value_near_label,
-    detect_unit_ker
+    detect_unit_ker,
+    find_value_near_label,
+    get_page_size_at_300dpi,
+    load_ocr_pages,
+    polygon_to_bbox_normalized,
+    search_text_exact,
+    search_text_fuzzy,
 )
+
+
+def normalize_text(text: str) -> str:
+    """Remove accents and convert to lowercase."""
+    text = unicodedata.normalize("NFKD", text)
+    return "".join([c for c in text if not unicodedata.combining(c)]).lower()
+
+
+def detect_page_sections(pages: list[dict]) -> dict:
+    """
+    For each page, detects which financial section it belongs to.
+    Only matches anchors in SHORT lines (likely headers, not prose).
+    """
+    section_anchors = {
+        "bilan_actif": [
+            "bilan actif",
+            "actif immobilise",
+            "total actif circulant",
+            "total actif immobilise",
+        ],
+        "bilan_passif": [
+            "bilan passif",
+            "situation nette",
+            "dettes financieres",
+        ],
+        "compte_resultat": [
+            "compte de resultat",
+            "produits d'exploitation",
+            "charges d'exploitation",
+            "total des produits",
+            "total des charges",
+            "resultat d'exploitation",
+            "benefice ou perte",
+        ],
+    }
+
+    page_sections = {}
+    for page_data in pages:
+        page_num = page_data["page"]
+        ocr_lines = page_data.get("ocr", [])
+
+        sections = set()
+        for line in ocr_lines:
+            text = line.get("text", "")
+            # Only consider short lines — headers, not prose
+            if len(text) > 80:
+                continue
+            norm = normalize_text(text)
+            for section, anchors in section_anchors.items():
+                if any(anchor in norm for anchor in anchors):
+                    sections.add(section)
+
+        page_sections[page_num] = sections
+
+    return page_sections
 
 FIELDS = [
     {
         "field_key": "PL_REVENUE_FRGAAP",
-        "queries": ["chiffre d'affaires", "chiffre d affaires", "montant net du chiffre"],
+        "queries": [
+            "chiffres d'affaires nets",
+            "chiffre d'affaires net",
+        ],
+        "section": "compte_resultat",
         "unit_type": "monetary",
     },
     {
         "field_key": "PL_PERSONNEL_COSTS_FRGAAP",
-        "queries": ["salaires et traitements", "salaires et traitement"],
+        "queries": [
+            "total charges de personnel",
+        ],
+        "section": "compte_resultat",
         "unit_type": "monetary",
-        "note": "need to add charges sociales too — this is wages only"
     },
     {
         "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
-        "queries": ["autres achats et charges externes", "autres achats & charges externes"],
-        "unit_type": "monetary",
-    },
-    {
-        "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
-        "queries": ["dotations d'exploitation", "dotations d exploitation",
-                     "amortissements et provisions", "amortissements provisions"],
-        "unit_type": "monetary",
-    },
-    {
-        "field_key": "PL_FINANCIAL_RESULTS_FRGAAP",
-        "queries": ["résultat financier", "resultat financier"],
-        "unit_type": "monetary",
-    },
-    {
-        "field_key": "PL_INCOME_TAX_FRGAAP",
-        "queries": ["impôts sur les bénéfices", "impots sur les benefices",
-                     "impôt sur les bénéfices", "impot sur les benefices"],
+        "queries": [
+            "autres achats et charges externes",
+            "autres achats & charges externes",
+        ],
+        "section": "compte_resultat",
         "unit_type": "monetary",
     },
     {
         "field_key": "BS_TOTAL_ASSETS_FRGAAP",
-        "queries": ["total général", "total general"],
+        "queries": [
+            "total général",
+            "total general",
+        ],
+        "section": "bilan_actif",
         "unit_type": "monetary",
-        "note": "appears on both actif and passif — we want the one on the ACTIF page"
     },
     {
         "field_key": "BS_TOTAL_EQUITY_FRGAAP",
-        "queries": ["total des capitaux propres", "total capitaux propres"],
+        "queries": [
+            "total situation nette",
+            "total capitaux propres",
+        ],
+        "section": "bilan_passif",
         "unit_type": "monetary",
     },
     {
         "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
-        "queries": ["capital social", "capital souscrit"],
-        "unit_type": "monetary",
-    },
-    {
-        "field_key": "BS_CASH_CURRENT_ASSET_FRGAAP",
-        "queries": ["disponibilités", "disponibilites", "disponibilite"],
+        "queries": [
+            "capital social ou individuel",
+            "capital social",
+        ],
+        "section": "bilan_passif",
         "unit_type": "monetary",
     },
 ]
 
-def extract_one_field (field_desc: dict, pages: list, pdf_path: str) -> dict | None:
+def extract_one_field(
+    field_desc: dict, pages: list, pdf_path: str, page_sections: dict
+) -> dict | None:
+    target_section = field_desc.get("section")
+
     for query in field_desc["queries"]:
         for page_data in pages:
             page_num = page_data["page"]
+
+            # Skip pages that don't belong to this field's section
+            if target_section and target_section not in page_sections.get(page_num, set()):
+                continue
+
             ocr_lines = page_data.get("ocr", [])
 
             matches = search_text_exact(ocr_lines, query)
-
             if not matches:
-                fuzzy = search_text_fuzzy(ocr_lines, query, threshold=0.75)
+                fuzzy = search_text_fuzzy(ocr_lines, query, threshold=0.80)
                 if fuzzy:
-                    # only best match
                     matches = [fuzzy[0]["line"]]
 
-                    for label_line in matches:
-                        result = find_value_near_label(ocr_lines, label_line, ocr_lines)
-                        if result and result["value"] is not None:
-                            w_px, h_px = get_page_size_at_300dpi(pdf_path, page_num)
-                            bbox = polygon_to_bbox_normalized(
-                                result["source_line"]["polygon"], w_px, h_px
-                            )
-                            return {
-                                "field_key": field_desc["field_key"],
-                                "value": result["value"],
-                                "page": page_num,
-                                "bbox": bbox,
-                                "snippet": result["source_line"]["text"],
-                                "label_matched": label_line["text"]
-                            }
+            for label_line in matches:
+                # Skip section headers like "3.3 Résultat..."
+                text_line = label_line["text"].strip()
+                if re.match(r"^\d+\.\d+", text_line):
+                    continue
 
+                result = find_value_near_label(ocr_lines, label_line, ocr_lines)
+                if result and result["value"] is not None:
+                    w_px, h_px = get_page_size_at_300dpi(pdf_path, page_num)
+                    bbox = polygon_to_bbox_normalized(
+                        result["source_line"]["polygon"], w_px, h_px
+                    )
+                    return {
+                        "field_key": field_desc["field_key"],
+                        "value": result["value"],
+                        "page": page_num,
+                        "bbox": bbox,
+                        "snippet": result["source_line"]["text"],
+                        "label_matched": label_line["text"],
+                    }
     return None
 
-def process_document (siren: srt, doc_id: str, deposit_date: str) -> dict:
+
+def process_document(siren: str, doc_id: str, deposit_date: str) -> dict:
     pdf_path = f"data/{siren}/bilans/pdf/bilan_{deposit_date}_{doc_id}.pdf"
     ocr_dir = f"data/{siren}/bilans/ocr/{doc_id}"
 
     pages = load_ocr_pages(ocr_dir)
     unit = detect_unit_ker(pages)
+    page_sections = detect_page_sections(pages)
+
+    # Show which pages were mapped to which sections
+    for page_num, sections in sorted(page_sections.items()):
+        if sections:
+            print(f"  Page {page_num}: {', '.join(sections)}")
 
     extracted_fields = []
     for field_def in FIELDS:
-        result = extract_one_field(field_def, pages, pdf_path)
+        result = extract_one_field(field_def, pages, pdf_path, page_sections)
         if result:
-            field_unit = unit  # EUR or kEUR from document detection
-            result["unit"] = field_unit
+            result["unit"] = unit
             extracted_fields.append(result)
-            print(f"  ✓ {result['field_key']}: {result['value']} {field_unit}")
+            print(f"  ✓ {result['field_key']}: {result['value']} {unit}")
             print(f"    page {result['page']}, matched: '{result['label_matched']}'")
         else:
             print(f"  ✗ {field_def['field_key']}: NOT FOUND")
@@ -116,16 +193,21 @@ def process_document (siren: srt, doc_id: str, deposit_date: str) -> dict:
     return {
         "pdf": pdf_path,
         "siren": siren,
-        "fiscal_year_end": None,  # TODO: extract from document
+        "fiscal_year_end": None,
         "fields": extracted_fields,
     }
 
 
 if __name__ == "__main__":
-    print("=== Extracting from 445070311 (2022-02-14) ===\n")
-    result = process_document(
-        siren="445070311",
-        doc_id="63e2481c916269756a09542b",
-        deposit_date="2022-02-14"
-    )
-    print(f"\nFound {len(result['fields'])} / {len(FIELDS)} fields")
+    # testing
+    docs = [
+        ("445070311", "63e2481c916269756a09542b", "2022-02-14"),
+        ("445070311", "65a4095d5fd178b16b09b860", "2023-11-21"),
+        ("445070311", "6860f28ca0138eae340c7453", "2025-05-15"),
+    ]
+
+    for siren, doc_id, date in docs:
+        print(f"\n=== Extracting from {siren} ({date}) ===\n")
+        result = process_document(siren=siren, doc_id=doc_id, deposit_date=date)
+        print(f"\nFound {len(result['fields'])} / {len(FIELDS)} fields")
+        print("-" * 60)

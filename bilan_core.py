@@ -67,6 +67,58 @@ def parse_number(text: str):
     except ValueError:
         return None
 
+def merge_horizontal_lines(ocr_lines: list[dict], max_x_gap: float = 35.0) -> list[dict]:
+    if not ocr_lines:
+        return []
+
+    def get_geom(line):
+        xs = [p[0] for p in line["polygon"]]
+        ys = [p[1] for p in line["polygon"]]
+        x0, x1 = min(xs), max(xs)
+        y0, y1 = min(ys), max(ys)
+        y_center = (y0 + y1) / 2.0
+        height = max(y1 - y0, 1.0)
+        return x0, x1, y0, y1, y_center, height
+
+    sorted_lines = sorted(ocr_lines, key=lambda l: (get_geom(l)[4], get_geom(l)[0]))
+
+    merged: list[dict] = []
+
+    for line in sorted_lines:
+        if not merged:
+            merged.append(dict(line))
+            continue
+
+        prev = merged[-1]
+        px0, px1, py0, py1, py_center, pheight = get_geom(prev)
+        cx0, cx1, cy0, cy1, cy_center, cheight = get_geom(line)
+
+        y_tol = max(pheight, cheight, 15.0) * 0.7
+        same_line = abs(py_center - cy_center) <= y_tol
+
+        x_gap = cx0 - px1
+
+        if same_line and (-10 <= x_gap <= max_x_gap):
+            merged_text = f"{prev['text']} {line['text']}"
+            new_x0 = min(px0, cx0)
+            new_y0 = min(py0, cy0)
+            new_x1 = max(px1, cx1)
+            new_y1 = max(py1, cy1)
+
+            merged[-1] = {
+                "text": merged_text,
+                "polygon": [
+                    [new_x0, new_y0],
+                    [new_x1, new_y0],
+                    [new_x1, new_y1],
+                    [new_x0, new_y1],
+                ],
+            }
+        else:
+            merged.append(dict(line))
+
+    return merged
+
 def extract_number_from_line(text: str):
 
     pattern = r"[\d][\d\s\u00a0.,]*[\d]"
@@ -87,9 +139,9 @@ def extract_number_from_line(text: str):
 
 def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list):
     # first try: number in the same bbox
-    value = extract_number_from_line(label_line["text"])
-    if value is not None:
-        return {"value": value, "source_line": label_line}
+    # value = extract_number_from_line(label_line["text"])
+    # if value is not None:
+    #    return {"value": value, "source_line": label_line}
 
     # second try: searching for different bboxes with the same (approximately) y
     label_ys = [p[1] for p in label_line["polygon"]]
@@ -141,6 +193,10 @@ def load_ocr_pages(ocr_dir: str) -> list[dict]:
     for json_file in sorted(ocr_path.glob("page_*.json")):
         with open(json_file, "r", encoding="utf-8") as f:
             page_data = json.load(f)
+            
+            if "ocr" in page_data:
+                page_data["ocr"] = merge_horizontal_lines(page_data["ocr"])
+
             pages.append(page_data)
 
 
