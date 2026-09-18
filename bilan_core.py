@@ -54,6 +54,23 @@ def search_text_exact(ocr_lines: list[dict], query: str) -> list[dict]:
 
     return results
 
+def search_text_fuzzy(ocr_lines: list[dict], query: str, threshold: float = 0.6) -> list[dict]:
+    query_lower = query.lower()
+    results = []
+    for line in ocr_lines:
+        text_lower = line["text"].lower()
+        if len(text_lower) >= len(query_lower):
+            for i in range(len(text_lower) - len(query_lower) + 1):
+                window = text_lower[i:i + len(query_lower)]
+                ratio = difflib.SequenceMatcher(None, query_lower, window).ratio()
+                if ratio >= threshold:
+                    results.append({"line": line, "score": ratio})
+                    break  # it doesnt need to keep running if i found it in this line
+    
+    # best match first
+    results.sort(key=lambda r: r["score"], reverse=True)
+    return results
+
 if __name__ == "__main__":
     # testing config, eventually will turn into args
     SIREN = "445070311"
@@ -66,7 +83,7 @@ if __name__ == "__main__":
     print(f"The document has {len(pages)} pages of OCR\n")
 
     #for each page, shows quantity of lines and searches a snippet of text
-    QUERY = "chiffre d affaires"
+    QUERY = "chiffre d'affaires"
 
     print(f"Query used: {QUERY}\n")
 
@@ -77,19 +94,33 @@ if __name__ == "__main__":
         matches = search_text_exact(ocr_lines, QUERY)
 
         if matches:
-            print("Got an exact match!\n")
-            print(f"Page {page_num}: FOUND: '{QUERY}'")
-
             w_px, h_px = get_page_size_at_300dpi(PDF_PATH, page_num)
 
             for match in matches:
                 bbox = polygon_to_bbox_normalized(match["polygon"], w_px, h_px)
+                print("Exact match")
+                print(f"  Page {page_num}:")
                 print(f"  Text: {match['text']}")
                 print(f"  Score OCR: {match['score']}")
                 print(f"  BBox normalized: {bbox}\n")
 
-        else:
-            print(f"didnt find anything exact on page {page_num}. Either there is nothing or you need to implement fuzzy!!!")
+    for page_data in pages:
+        page_num = page_data["page"]
+        ocr_lines = page_data.get("ocr", [])
+        
+        fuzzy_matches = search_text_fuzzy(ocr_lines, QUERY, threshold=0.7)
+        
+        if fuzzy_matches:
+            w_px, h_px = get_page_size_at_300dpi(PDF_PATH, page_num)
+            print("Fuzzy match")
+            print(f"Page {page_num}:")
+            for fm in fuzzy_matches[:3]:  # top 3
+                line = fm["line"]
+                bbox = polygon_to_bbox_normalized(line["polygon"], w_px, h_px)
+                print(f"  [{fm['score']:.2f}] {line['text']}")
+                print(f"         bbox: {bbox}")
+
+
 
 
 
