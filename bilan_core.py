@@ -4,6 +4,35 @@ import pymupdf
 import difflib
 import re
 
+def detect_unit_ker(pages: list[dict]) -> str:
+    keur_patterns = [
+        "montants sont indiqués en k",     
+        "montants sont indiques en k",      # OCR drops accent
+        "montants exprimés en milliers",
+        "montants exprimes en milliers",    # OCR drops accent
+        "montants en milliers",
+        "exprimés en milliers",
+        "exprimes en milliers",             # OCR drops accent
+        "indiqués en milliers",
+        "indiques en milliers",             # OCR drops accent
+        "exprimés en k€",
+        "exprimes en k€",                   # OCR drops accent
+        "indiqués en k€",
+        "indiques en k€",                   # OCR drops accent
+        "réalisé en kilo",                 
+        "realise en kilo",                  # OCR drops accent
+        "en milliers d'euros",
+        "en milliers d euros",
+    ]
+
+    for page_data in pages:
+        for line in page_data.get("ocr", []):
+            text_lower = line["text"].lower()
+            for pattern in keur_patterns:
+                if pattern in text_lower:
+                    return "kEUR"
+    
+    return "EUR"
 
 def parse_number(text: str):
     text = text.strip()
@@ -174,69 +203,45 @@ def search_text_fuzzy(ocr_lines: list[dict], query: str, threshold: float = 0.6)
     return results
 
 if __name__ == "__main__":
-    # ── Test parse_number ──
-    print("=== parse_number ===")
-    parse_tests = [
-        ("1 234 567", 1234567.0),
-        ("1.234.567", 1234567.0),
-        ("45 231,89", 45231.89),
-        ("(45 231)", -45231.0),
-        ("- 12 000", -12000.0),
-        ("néant", None),
-        ("", None),
-    ]
-    for text, expected in parse_tests:
-        result = parse_number(text)
-        status = "✓" if result == expected else "✗"
-        print(f"  {status} '{text}' → {result} (expected: {expected})")
-
-    # ── Test extract_number_from_line ──
-    print("\n=== extract_number_from_line ===")
-    extract_tests = [
-        ("Montant net du chiffre d'affaires 1 234 567", 1234567.0),
-        ("Total général (I + II) 45 231", 45231.0),
-        ("Néant", None),
-        ("FW 892 114", 892114.0),
-        ("2052", 2052.0),  # page number — will match, thats expected
-    ]
-    for text, expected in extract_tests:
-        result = extract_number_from_line(text)
-        status = "✓" if result == expected else "✗"
-        print(f"  {status} '{text}' → {result} (expected: {expected})")
-
-    # ── Test find_value_near_label with fake OCR lines ──
-    print("\n=== find_value_near_label ===")
+    # ── Test detect_unit on all 328024377 documents ──
+    print("\n=== detect_unit — SIREN 328024377 (kEUR company) ===")
     
-    # Simulates a table row: label on the left, three numbers to the right
-    # Like: "TOTAL DETTES"  |  213 687  |  214 974  |  160 421
-    fake_lines = [
-        {"polygon": [[100,500],[300,500],[300,520],[100,520]], "text": "TOTAL DETTES FOURNISSEURS", "score": 0.99},
-        {"polygon": [[400,500],[480,500],[480,520],[400,520]], "text": "213 687", "score": 0.98},
-        {"polygon": [[550,500],[630,500],[630,520],[550,520]], "text": "214 974", "score": 0.97},
-        {"polygon": [[700,500],[780,500],[780,520],[700,520]], "text": "160 421", "score": 0.96},
-        {"polygon": [[100,600],[300,600],[300,620],[100,620]], "text": "Something else", "score": 0.95},
+    bernachon_docs = [
+        ("63e8ebbb54febda17c19ee7c", "2020-12-24"),
+        ("63e8ebbb54febda17c19ee7d", "2021-12-17"),
+        ("63e8ebbb54febda17c19ee7e", "2022-12-13"),
     ]
     
-    label = fake_lines[0]  # "TOTAL DETTES FOURNISSEURS"
-    result = find_value_near_label(fake_lines, label, fake_lines)
-    
-    if result:
-        expected_value = 213687.0  # should pick the CLOSEST to the right, not the furthest
-        status = "✓" if result["value"] == expected_value else "✗"
-        print(f"  {status} Label: '{label['text']}'")
-        print(f"    Found: {result['value']} from '{result['source_line']['text']}'")
-        print(f"    Expected: {expected_value}")
-    else:
-        print("  ✗ No value found (should have found 213687)")
-
-    # Test: number inside the label text itself
-    inline_lines = [
-        {"polygon": [[100,300],[600,300],[600,320],[100,320]], "text": "Capital social 50 000", "score": 0.99},
-    ]
-    result2 = find_value_near_label(inline_lines, inline_lines[0], inline_lines)
-    if result2:
-        status = "✓" if result2["value"] == 50000.0 else "✗"
-        print(f"  {status} Inline: '{inline_lines[0]['text']}' → {result2['value']} (expected: 50000.0)")
-
-
-
+    for doc_id, date in bernachon_docs:
+        ocr_dir = f"data/328024377/bilans/ocr/{doc_id}"
+        pages = load_ocr_pages(ocr_dir)
+        unit = detect_unit_ker(pages)
+        
+        # Use the SAME strict patterns as the function
+        strict_patterns = [
+            "montants sont indiqués en k", "montants sont indiques en k",
+            "montants exprimés en milliers", "montants exprimes en milliers",
+            "montants en milliers", "exprimés en milliers", "exprimes en milliers",
+            "indiqués en milliers", "indiques en milliers",
+            "exprimés en k€", "exprimes en k€",
+            "indiqués en k€", "indiques en k€",
+            "réalisé en kilo", "realise en kilo",
+            "en milliers d'euros", "en milliers d euros",
+        ]
+        
+        found_line = None
+        for page_data in pages:
+            for line in page_data.get("ocr", []):
+                text_lower = line["text"].lower()
+                if any(p in text_lower for p in strict_patterns):
+                    found_line = f"  Page {page_data['page']}: '{line['text']}'"
+                    break
+            if found_line:
+                break
+        
+        status = "✓" if unit == "kEUR" else "✗"
+        print(f"  {status} Doc {date} ({doc_id[:8]}...): {unit}")
+        if found_line:
+            print(found_line)
+        else:
+            print("    (no kEUR indicator found in OCR)")
