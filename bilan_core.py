@@ -1,0 +1,357 @@
+import json 
+import pathlib
+import pymupdf
+import difflib
+import re
+
+def is_isolated_number_cell(text: str) -> bool:
+    text = text.strip()
+
+    if re.search(r"[a-zA-ZÀ-ÿ]{2,}", text):
+        return False
+    return True
+
+def detect_unit_ker(pages: list[dict]) -> str:
+    keur_patterns = [
+        "montants sont indiqués en k",     
+        "montants sont indiques en k",      # OCR drops accent
+        "montants exprimés en milliers",
+        "montants exprimes en milliers",    # OCR drops accent
+        "montants en milliers",
+        "exprimés en milliers",
+        "exprimes en milliers",             # OCR drops accent
+        "indiqués en milliers",
+        "indiques en milliers",             # OCR drops accent
+        "exprimés en k€",
+        "exprimes en k€",                   # OCR drops accent
+        "indiqués en k€",
+        "indiques en k€",                   # OCR drops accent
+        "réalisé en kilo",                 
+        "realise en kilo",                  # OCR drops accent
+        "en milliers d'euros",
+        "en milliers d euros",
+    ]
+
+    for page_data in pages:
+        for line in page_data.get("ocr", []):
+            text_lower = line["text"].lower()
+            for pattern in keur_patterns:
+                if pattern in text_lower:
+                    return "kEUR"
+    
+    return "EUR"
+
+def parse_number(text: str):
+    text = text.strip()
+
+    # kinda slop but I found only these examples of "nothing"
+    if not text or text.lower() in ("néant", "neant", "-", ""):
+        return None
+
+    negative = False
+    if text.startswith("(") and text.endswith(")"):
+        negative = True
+        # removes first and last char
+        text = text[1:-1].strip()
+    if text.startswith("-"):
+        negative = True
+        # removes only first char
+        text = text[1:].strip()
+
+    text = text.replace(" ", "").replace(".", "")
+    # decimal pattern point
+    text = text.replace(",", ".")
+
+    # ai made: removes every char that is not a digit or a ".", really a safeguard
+    text = re.sub(r"[^\d.]", "", text)
+
+    if not text:
+        return None
+
+    try:
+        value = float(text)
+        return -value if negative else value
+    except ValueError:
+        return None
+
+def merge_horizontal_lines(ocr_lines: list[dict], max_x_gap: float = 60.0) -> list[dict]:
+    if not ocr_lines:
+        return []
+
+    def get_geom(line):
+        xs = [p[0] for p in line["polygon"]]
+        ys = [p[1] for p in line["polygon"]]
+        x0, x1 = min(xs), max(xs)
+        y0, y1 = min(ys), max(ys)
+        y_center = (y0 + y1) / 2.0
+        height = max(y1 - y0, 1.0)
+        return x0, x1, y0, y1, y_center, height
+
+    def is_numeric_fragment(text: str) -> bool:
+        cleaned = text.strip()
+        if not cleaned:
+            return False
+        return bool(re.match(r'^[\d\s\u00a0.,()+-]+$', cleaned))
+
+    sorted_lines = sorted(ocr_lines, key=lambda l: (get_geom(l)[4], get_geom(l)[0]))
+
+    merged: list[dict] = []
+
+    for line in sorted_lines:
+        if not merged:
+            merged.append(dict(line))
+            continue
+
+        prev = merged[-1]
+        px0, px1, py0, py1, py_center, pheight = get_geom(prev)
+        cx0, cx1, cy0, cy1, cy_center, cheight = get_geom(line)
+
+        y_tol = max(pheight, cheight, 15.0) * 0.7
+        same_line = abs(py_center - cy_center) <= y_tol
+
+        x_gap = cx0 - px1
+
+        both_numeric = is_numeric_fragment(prev["text"]) and is_numeric_fragment(line["text"])
+        if both_numeric:
+            effective_gap = min(max_x_gap, 45)
+        else:
+            effective_gap = max_x_gap
+
+        if same_line and (-10 <= x_gap <= effective_gap):
+            merged_text = f"{prev['text']} {line['text']}"
+            new_x0 = min(px0, cx0)
+            new_y0 = min(py0, cy0)
+            new_x1 = max(px1, cx1)
+            new_y1 = max(py1, cy1)
+
+            merged[-1] = {
+                "text": merged_text,
+                "polygon": [
+                    [new_x0, new_y0],
+                    [new_x1, new_y0],
+                    [new_x1, new_y1],
+                    [new_x0, new_y1],
+                ],
+            }
+        else:
+            merged.append(dict(line))
+
+    return merged
+
+def extract_number_from_line(text: str):
+
+    pattern = r"[\d][\d\s\u00a0.,]*[\d]"
+    matches = re.findall(pattern, text)
+
+    if not matches:
+        single = re.findall(r"\d+", text)
+        if single:
+            matches = single
+
+    # returning the last number here is just a quick decision, i guess i would have to analyse more PDFs to find a pattern of relevance
+    for candidate in reversed(matches):
+        value = parse_number(candidate)
+        if value is not None:
+            return value
+    
+    return None
+
+def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list, column_index: int = 2):
+    label_ys = [p[1] for p in label_line["polygon"]]
+    label_y_center = (min(label_ys) + max(label_ys)) / 2
+    label_height = max(label_ys) - min(label_ys)
+    
+    tolerance = max(label_height * 1.0, 20)
+    
+    # Step 1: collect all numeric cells on the same row, to the right of the label
+    label_x_right = max(p[0] for p in label_line["polygon"])
+    
+    raw_cells = []
+    for line in all_lines:
+        if line is label_line:
+            continue
+        if not is_isolated_number_cell(line["text"]):
+            continue
+        
+        line_ys = [p[1] for p in line["polygon"]]
+        line_y_center = (min(line_ys) + max(line_ys)) / 2
+        
+        if abs(line_y_center - label_y_center) <= tolerance:
+            line_xs = [p[0] for p in line["polygon"]]
+            x_left = min(line_xs)
+            x_right = max(line_xs)
+            if x_right > label_x_right:
+                raw_cells.append({
+                    "text": line["text"],
+                    "source_line": line,
+                    "x_left": x_left,
+                    "x_right": x_right,
+                })
+    
+    if not raw_cells:
+        return None
+    
+    raw_cells.sort(key=lambda c: c["x_left"])
+    
+    COLUMN_GAP_THRESHOLD = 80  # pixels — gap between columns in a liasse
+    
+    groups = []
+    current_group = [raw_cells[0]]
+    
+    for cell in raw_cells[1:]:
+        prev = current_group[-1]
+        gap = cell["x_left"] - prev["x_right"]
+        
+        if gap <= COLUMN_GAP_THRESHOLD:
+            current_group.append(cell)
+        else:
+            groups.append(current_group)
+            current_group = [cell]
+    
+    groups.append(current_group)  
+    
+    columns = []
+    for group in groups:
+        merged_text = " ".join(c["text"] for c in group)
+        value = extract_number_from_line(merged_text)
+        if value is not None:
+            # Use the bbox that spans the whole group
+            all_x_left = min(c["x_left"] for c in group)
+            all_x_right = max(c["x_right"] for c in group)
+            # Use the first cell's source_line for bbox (or build a merged one)
+            merged_polygon = [
+                [all_x_left, min(p[1] for c in group for p in c["source_line"]["polygon"])],
+                [all_x_right, min(p[1] for c in group for p in c["source_line"]["polygon"])],
+                [all_x_right, max(p[1] for c in group for p in c["source_line"]["polygon"])],
+                [all_x_left, max(p[1] for c in group for p in c["source_line"]["polygon"])],
+            ]
+            columns.append({
+                "value": value,
+                "source_line": {
+                    "text": merged_text,
+                    "polygon": merged_polygon,
+                },
+            })
+    
+    if not columns:
+        return None
+
+    idx = len(columns) - column_index
+    idx = max(0, min(idx, len(columns) - 1))
+    return {"value": columns[idx]["value"], "source_line": columns[idx]["source_line"]}
+
+def load_ocr_pages(ocr_dir: str) -> list[dict]:
+    ocr_path = pathlib.Path(ocr_dir)
+    pages = []
+
+    for json_file in sorted(ocr_path.glob("page_*.json")):
+        with open(json_file, "r", encoding="utf-8") as f:
+            page_data = json.load(f)
+            
+            if "ocr" in page_data:
+                page_data["ocr"] = merge_horizontal_lines(page_data["ocr"], max_x_gap=60)
+
+            pages.append(page_data)
+
+
+    # Here I noticed that the pages where in "alfabetical order", so page_0015 came before page_002, for example
+    # This way I sort it by the JSON field
+    pages.sort(key = lambda p: p.get("page", 0))
+    return pages
+
+def get_page_size_at_300dpi(pdf_path: str, page_num: int) -> tuple[float, float]:
+    doc = pymupdf.open(pdf_path)
+    page = doc[page_num - 1]
+    rect = page.rect
+    doc.close()
+
+    width_px = rect.width * 300 / 72
+    height_px = rect.height * 300 / 72
+    return width_px, height_px
+
+def polygon_to_bbox_normalized(polygon: list, page_width_px: float, page_height_px: float) -> list[float]:
+    xs = [p[0] for p in polygon]
+    ys = [p[1] for p in polygon]
+
+    x0 = min(xs) / page_width_px
+    y0 = min(ys) / page_height_px
+    x1 = max(xs) / page_width_px
+    y1 = max(ys) / page_height_px
+    
+    # just a safeguard
+    x0 = max(0.0, min(1.0, x0))
+    y0 = max(0.0, min(1.0, y0))
+    x1 = max(0.0, min(1.0, x1))
+    y1 = max(0.0, min(1.0, y1))
+    
+    return [round(x0, 4), round(y0, 4), round(x1, 4), round(y1, 4)]
+
+def search_text_exact(ocr_lines: list[dict], query: str) -> list[dict]:
+    query_lower = query.lower()
+    results = []
+    for line in ocr_lines:
+        if query_lower in line["text"].lower():
+            results.append(line)
+
+    return results
+
+def search_text_fuzzy(ocr_lines: list[dict], query: str, threshold: float = 0.6) -> list[dict]:
+    query_lower = query.lower()
+    results = []
+    for line in ocr_lines:
+        text_lower = line["text"].lower()
+        if len(text_lower) >= len(query_lower):
+            for i in range(len(text_lower) - len(query_lower) + 1):
+                window = text_lower[i:i + len(query_lower)]
+                ratio = difflib.SequenceMatcher(None, query_lower, window).ratio()
+                if ratio >= threshold:
+                    results.append({"line": line, "score": ratio})
+                    break  # it doesnt need to keep running if i found it in this line
+    
+    # best match first
+    results.sort(key=lambda r: r["score"], reverse=True)
+    return results
+
+if __name__ == "__main__":
+    # ── Test detect_unit on all 328024377 documents ──
+    print("\n=== detect_unit — SIREN 328024377 (kEUR company) ===")
+    
+    bernachon_docs = [
+        ("63e8ebbb54febda17c19ee7c", "2020-12-24"),
+        ("63e8ebbb54febda17c19ee7d", "2021-12-17"),
+        ("63e8ebbb54febda17c19ee7e", "2022-12-13"),
+    ]
+    
+    for doc_id, date in bernachon_docs:
+        ocr_dir = f"data/328024377/bilans/ocr/{doc_id}"
+        pages = load_ocr_pages(ocr_dir)
+        unit = detect_unit_ker(pages)
+        
+        # Use the SAME strict patterns as the function
+        strict_patterns = [
+            "montants sont indiqués en k", "montants sont indiques en k",
+            "montants exprimés en milliers", "montants exprimes en milliers",
+            "montants en milliers", "exprimés en milliers", "exprimes en milliers",
+            "indiqués en milliers", "indiques en milliers",
+            "exprimés en k€", "exprimes en k€",
+            "indiqués en k€", "indiques en k€",
+            "réalisé en kilo", "realise en kilo",
+            "en milliers d'euros", "en milliers d euros",
+        ]
+        
+        found_line = None
+        for page_data in pages:
+            for line in page_data.get("ocr", []):
+                text_lower = line["text"].lower()
+                if any(p in text_lower for p in strict_patterns):
+                    found_line = f"  Page {page_data['page']}: '{line['text']}'"
+                    break
+            if found_line:
+                break
+        
+        status = "✓" if unit == "kEUR" else "✗"
+        print(f"  {status} Doc {date} ({doc_id[:8]}...): {unit}")
+        if found_line:
+            print(found_line)
+        else:
+            print("    (no kEUR indicator found in OCR)")

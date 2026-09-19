@@ -1,0 +1,1059 @@
+{
+  "documents": [
+    {
+      "pdf": "data/820561470/bilans/pdf/bilan_2023-06-05_6493e4372f502414800f8164.pdf",
+      "siren": "820561470",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 638962.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.7543,
+            0.859,
+            0.8081,
+            0.8711
+          ],
+          "snippet": "638 962",
+          "label_matched": "TOTAL ACTIF (I à VI)"
+        },
+        {
+          "field_key": "BS_TOTAL_EQUITY_FRGAAP",
+          "value": 322009.0,
+          "unit": "EUR",
+          "page": 7,
+          "bbox": [
+            0.7615,
+            0.3873,
+            0.8146,
+            0.3994
+          ],
+          "snippet": "322 009",
+          "label_matched": "Total des capitaux propres"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 10000.0,
+          "unit": "EUR",
+          "page": 7,
+          "bbox": [
+            0.7729,
+            0.16,
+            0.8182,
+            0.1724
+          ],
+          "snippet": "10 000",
+          "label_matched": "Capital social ou individuel"
+        }
+      ],
+      "run": {
+        "seconds": 0.08,
+        "pages": 17,
+        "seconds_per_page": 0.005
+      }
+    },
+    {
+      "pdf": "data/820561470/bilans/pdf/bilan_2023-06-13_6543d3fd08093cdace058668.pdf",
+      "siren": "820561470",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 638554.0,
+          "unit": "EUR",
+          "page": 3,
+          "bbox": [
+            0.745,
+            0.8588,
+            0.8017,
+            0.8711
+          ],
+          "snippet": "638 554",
+          "label_matched": "TOTaL ACTiF (I à VI)"
+        },
+        {
+          "field_key": "BS_TOTAL_EQUITY_FRGAAP",
+          "value": 438221.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.7515,
+            0.3862,
+            0.8041,
+            0.3985
+          ],
+          "snippet": "438 221",
+          "label_matched": "Total des capitaux propres"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 150000.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.7544,
+            0.1597,
+            0.807,
+            0.1718
+          ],
+          "snippet": "150 000",
+          "label_matched": "Capital social ou individuel"
+        }
+      ],
+      "run": {
+        "seconds": 0.08,
+        "pages": 15,
+        "seconds_per_page": 0.005
+      }
+    },
+    {
+      "pdf": "data/820561470/bilans/pdf/bilan_2024-01-15_67458f18cea78a70070fa226.pdf",
+      "siren": "820561470",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 866478.0,
+          "unit": "EUR",
+          "page": 1,
+          "bbox": [
+            0.7577,
+            0.8723,
+            0.8101,
+            0.8828
+          ],
+          "snippet": "866 478",
+          "label_matched": "TOTAL ACTIF (I à VI)"
+        },
+        {
+          "field_key": "BS_TOTAL_EQUITY_FRGAAP",
+          "value": 460510.0,
+          "unit": "EUR",
+          "page": 2,
+          "bbox": [
+            0.7573,
+            0.3784,
+            0.8093,
+            0.3892
+          ],
+          "snippet": "460 510",
+          "label_matched": "Total des capitaux propres"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 150000.0,
+          "unit": "EUR",
+          "page": 2,
+          "bbox": [
+            0.7577,
+            0.1426,
+            0.8101,
+            0.1535
+          ],
+          "snippet": "150 000",
+          "label_matched": "Capital social ou individuel"
+        }
+      ],
+      "run": {
+        "seconds": 0.08,
+        "pages": 13,
+        "seconds_per_page": 0.006
+      }
+    },
+    {
+      "pdf": "data/328024377/bilans/pdf/bilan_2020-12-24_63e8ebbb54febda17c19ee7c.pdf",
+      "siren": "328024377",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 33330.08,
+          "unit": "kEUR",
+          "page": 4,
+          "bbox": [
+            0.6397,
+            0.291,
+            0.7176,
+            0.3007
+          ],
+          "snippet": "3 333 0,08",
+          "label_matched": "Subventions d'exploitation"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 153851.32,
+          "unit": "kEUR",
+          "page": 4,
+          "bbox": [
+            0.7619,
+            0.3868,
+            0.8446,
+            0.3956
+          ],
+          "snippet": "15 385 1,32",
+          "label_matched": "Autres achats & charges externes"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 937364.0,
+          "unit": "kEUR",
+          "page": 2,
+          "bbox": [
+            0.749,
+            0.4786,
+            0.7926,
+            0.4874
+          ],
+          "snippet": "937 364",
+          "label_matched": "TOTAL ACTIF IMMOBILISE"
+        },
+        {
+          "field_key": "BS_TOTAL_EQUITY_FRGAAP",
+          "value": 2365051.0,
+          "unit": "kEUR",
+          "page": 3,
+          "bbox": [
+            0.7418,
+            0.3634,
+            0.7934,
+            0.3717
+          ],
+          "snippet": "2 365 051",
+          "label_matched": "TOTAL CAPITAUX PROPRES"
+        }
+      ],
+      "run": {
+        "seconds": 0.35,
+        "pages": 29,
+        "seconds_per_page": 0.012
+      }
+    },
+    {
+      "pdf": "data/328024377/bilans/pdf/bilan_2021-12-17_63e8ebbb54febda17c19ee7d.pdf",
+      "siren": "328024377",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 1428149350165960.0,
+          "unit": "kEUR",
+          "page": 4,
+          "bbox": [
+            0.8589,
+            0.4658,
+            0.9535,
+            0.599
+          ],
+          "snippet": "1 428 149 350 165 960",
+          "label_matched": "DOTATIONS D'EXPLOITATION Sur actif circulant : dotations aux provisions*"
+        },
+        {
+          "field_key": "PL_REVENUE_FRGAAP",
+          "value": 4982166.0,
+          "unit": "kEUR",
+          "page": 4,
+          "bbox": [
+            0.5014,
+            0.2035,
+            0.5952,
+            0.2179
+          ],
+          "snippet": "4 982 166",
+          "label_matched": "Chiffres d'affaires nets *"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 1339065.0,
+          "unit": "kEUR",
+          "page": 4,
+          "bbox": [
+            0.8585,
+            0.4233,
+            0.9523,
+            0.438
+          ],
+          "snippet": "1 339 065",
+          "label_matched": "Autres achats et charges externes (3) (6 bis)*"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 22904001454763.0,
+          "unit": "kEUR",
+          "page": 23,
+          "bbox": [
+            0.6645,
+            0.4703,
+            0.809,
+            0.4816
+          ],
+          "snippet": "2 290 400 1 454 763",
+          "label_matched": "TOTAL ACTIF IMMOBILISE"
+        },
+        {
+          "field_key": "BS_TOTAL_EQUITY_FRGAAP",
+          "value": 28169602365051.0,
+          "unit": "kEUR",
+          "page": 24,
+          "bbox": [
+            0.7549,
+            0.35,
+            0.8979,
+            0.3602
+          ],
+          "snippet": "2 816 960 2 365 051",
+          "label_matched": "TOTAL CAPITAUX PROPRES"
+        }
+      ],
+      "run": {
+        "seconds": 0.47,
+        "pages": 43,
+        "seconds_per_page": 0.011
+      }
+    },
+    {
+      "pdf": "data/328024377/bilans/pdf/bilan_2022-12-13_63e8ebbb54febda17c19ee7e.pdf",
+      "siren": "328024377",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 1.6888335236753218e+25,
+          "unit": "kEUR",
+          "page": 4,
+          "bbox": [
+            0.8503,
+            0.4629,
+            0.9451,
+            0.5989
+          ],
+          "snippet": "1 688 833 523 675 321 856 3 044 865",
+          "label_matched": "DOTATIONS D'EXPLOITATION Sur actif circulant : dotations aux provisions*"
+        },
+        {
+          "field_key": "PL_REVENUE_FRGAAP",
+          "value": 389266.0,
+          "unit": "kEUR",
+          "page": 4,
+          "bbox": [
+            0.6849,
+            0.1998,
+            0.7579,
+            0.2115
+          ],
+          "snippet": "389 266",
+          "label_matched": "Chiffres d'affaires nets *"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 1432377.0,
+          "unit": "kEUR",
+          "page": 4,
+          "bbox": [
+            0.8491,
+            0.4219,
+            0.9439,
+            0.4361
+          ],
+          "snippet": "1 432 377",
+          "label_matched": "Autres achats et charges externes (3) (6 bis)*"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 3053019.0,
+          "unit": "kEUR",
+          "page": 24,
+          "bbox": [
+            0.7515,
+            0.4684,
+            0.8059,
+            0.4769
+          ],
+          "snippet": "3 053 019",
+          "label_matched": "TOTAL ACTIF IMMOBILISE"
+        },
+        {
+          "field_key": "BS_TOTAL_EQUITY_FRGAAP",
+          "value": 30364822816960.0,
+          "unit": "kEUR",
+          "page": 25,
+          "bbox": [
+            0.7494,
+            0.3466,
+            0.8954,
+            0.3569
+          ],
+          "snippet": "3 036 482 2 816 960",
+          "label_matched": "TOTAL CAPITAUX PROPRES"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 152500.0,
+          "unit": "kEUR",
+          "page": 3,
+          "bbox": [
+            0.4292,
+            0.1343,
+            0.5163,
+            0.1491
+          ],
+          "snippet": "152 500.",
+          "label_matched": "Capital social ou individuel (1)* (Dont versé :"
+        }
+      ],
+      "run": {
+        "seconds": 0.45,
+        "pages": 42,
+        "seconds_per_page": 0.011
+      }
+    },
+    {
+      "pdf": "data/445070311/bilans/pdf/bilan_2022-02-14_63e2481c916269756a09542b.pdf",
+      "siren": "445070311",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 280596.0,
+          "unit": "EUR",
+          "page": 16,
+          "bbox": [
+            0.7188,
+            0.6382,
+            0.7761,
+            0.6502
+          ],
+          "snippet": "280 596",
+          "label_matched": "TOTAL dotations d'exploitation :"
+        },
+        {
+          "field_key": "PL_REVENUE_FRGAAP",
+          "value": 4978292.0,
+          "unit": "EUR",
+          "page": 16,
+          "bbox": [
+            0.7051,
+            0.248,
+            0.7745,
+            0.26
+          ],
+          "snippet": "4 978 292",
+          "label_matched": "Chiffres d'affaires nets"
+        },
+        {
+          "field_key": "PL_PERSONNEL_COSTS_FRGAAP",
+          "value": 1347161.0,
+          "unit": "EUR",
+          "page": 16,
+          "bbox": [
+            0.7071,
+            0.549,
+            0.7732,
+            0.5592
+          ],
+          "snippet": "1 347 161",
+          "label_matched": "TOTAL charges de personnel :"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 884031.0,
+          "unit": "EUR",
+          "page": 16,
+          "bbox": [
+            0.7176,
+            0.4469,
+            0.7745,
+            0.4592
+          ],
+          "snippet": "884 031",
+          "label_matched": "Autres achats et charges externes"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 6899412.0,
+          "unit": "EUR",
+          "page": 14,
+          "bbox": [
+            0.7503,
+            0.9121,
+            0.8204,
+            0.9255
+          ],
+          "snippet": "6 899 412",
+          "label_matched": "TOTAL GÉNÉRAL"
+        },
+        {
+          "field_key": "BS_TOTAL_EQUITY_FRGAAP",
+          "value": 4845839.0,
+          "unit": "EUR",
+          "page": 15,
+          "bbox": [
+            0.7244,
+            0.2905,
+            0.7926,
+            0.3007
+          ],
+          "snippet": "4 845 839",
+          "label_matched": "TOTAL situation nette :"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 300000.0,
+          "unit": "EUR",
+          "page": 15,
+          "bbox": [
+            0.7369,
+            0.1622,
+            0.7934,
+            0.1739
+          ],
+          "snippet": "300 000",
+          "label_matched": "Capital social ou individuel"
+        }
+      ],
+      "run": {
+        "seconds": 0.42,
+        "pages": 28,
+        "seconds_per_page": 0.015
+      }
+    },
+    {
+      "pdf": "data/445070311/bilans/pdf/bilan_2023-11-21_65a4095d5fd178b16b09b860.pdf",
+      "siren": "445070311",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 267890.0,
+          "unit": "EUR",
+          "page": 27,
+          "bbox": [
+            0.7231,
+            0.6332,
+            0.7799,
+            0.6455
+          ],
+          "snippet": "267 890",
+          "label_matched": "TOTAL dotations d'exploitation :"
+        },
+        {
+          "field_key": "PL_REVENUE_FRGAAP",
+          "value": 7362279.0,
+          "unit": "EUR",
+          "page": 27,
+          "bbox": [
+            0.7106,
+            0.2442,
+            0.7783,
+            0.2558
+          ],
+          "snippet": "7 362 279",
+          "label_matched": "Chiffres d'affaires nets"
+        },
+        {
+          "field_key": "PL_PERSONNEL_COSTS_FRGAAP",
+          "value": 1943291.0,
+          "unit": "EUR",
+          "page": 27,
+          "bbox": [
+            0.7098,
+            0.5439,
+            0.7763,
+            0.5542
+          ],
+          "snippet": "1 943 291",
+          "label_matched": "TOTAL charges de personnel :"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 928188.0,
+          "unit": "EUR",
+          "page": 27,
+          "bbox": [
+            0.7215,
+            0.4424,
+            0.7791,
+            0.4541
+          ],
+          "snippet": "928 188",
+          "label_matched": "Autres achats et charges externes"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 10174922.0,
+          "unit": "EUR",
+          "page": 23,
+          "bbox": [
+            0.7396,
+            0.9096,
+            0.8134,
+            0.9199
+          ],
+          "snippet": "10 174 922",
+          "label_matched": "TOTAL GÉNÉRAL"
+        },
+        {
+          "field_key": "BS_TOTAL_EQUITY_FRGAAP",
+          "value": 7076801.0,
+          "unit": "EUR",
+          "page": 25,
+          "bbox": [
+            0.7312,
+            0.2841,
+            0.7993,
+            0.2958
+          ],
+          "snippet": "7 076 801",
+          "label_matched": "TOTAL situation nette :"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 300000.0,
+          "unit": "EUR",
+          "page": 25,
+          "bbox": [
+            0.7428,
+            0.1557,
+            0.8009,
+            0.1686
+          ],
+          "snippet": "300 000",
+          "label_matched": "Capital social ou individuel"
+        }
+      ],
+      "run": {
+        "seconds": 0.46,
+        "pages": 58,
+        "seconds_per_page": 0.008
+      }
+    },
+    {
+      "pdf": "data/445070311/bilans/pdf/bilan_2025-05-15_6860f28ca0138eae340c7453.pdf",
+      "siren": "445070311",
+      "fiscal_year_end": null,
+      "fields": [],
+      "run": {
+        "seconds": 0.92,
+        "pages": 32,
+        "seconds_per_page": 0.029
+      }
+    },
+    {
+      "pdf": "data/504304205/bilans/pdf/bilan_2017-05-31_63e13943526e1f30cd100db5.pdf",
+      "siren": "504304205",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 53693.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.7336,
+            0.4889,
+            0.7991,
+            0.5026
+          ],
+          "snippet": "53 693",
+          "label_matched": "- dotations aux amortissements*"
+        },
+        {
+          "field_key": "PL_REVENUE_FRGAAP",
+          "value": 1048023.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.7047,
+            0.168,
+            0.7979,
+            0.1811
+          ],
+          "snippet": "1 048 023",
+          "label_matched": "Chiffres d'affaires nets*"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 385028.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.7236,
+            0.4029,
+            0.7991,
+            0.4174
+          ],
+          "snippet": "385 028",
+          "label_matched": "Autres achats et charges externes (3) (6 bis) *"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 1807858.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.7112,
+            0.9181,
+            0.8051,
+            0.9295
+          ],
+          "snippet": "1 807 858",
+          "label_matched": "TOTAL GÉNÉRAL (I à VI)"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 1000000.0,
+          "unit": "EUR",
+          "page": 5,
+          "bbox": [
+            0.7003,
+            0.1044,
+            0.7963,
+            0.1181
+          ],
+          "snippet": "1 000 000",
+          "label_matched": "Capital social ou individuel (1)* (Dont versé : ......O.O.O...Q.Q.Q......."
+        }
+      ],
+      "run": {
+        "seconds": 0.61,
+        "pages": 28,
+        "seconds_per_page": 0.022
+      }
+    },
+    {
+      "pdf": "data/504304205/bilans/pdf/bilan_2018-10-24_63e13943526e1f30cd100db6.pdf",
+      "siren": "504304205",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 66303.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.7293,
+            0.4894,
+            0.7925,
+            0.5025
+          ],
+          "snippet": "66 303",
+          "label_matched": "- dotations aux amortissements*"
+        },
+        {
+          "field_key": "PL_REVENUE_FRGAAP",
+          "value": 964484.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.7196,
+            0.1696,
+            0.7933,
+            0.1821
+          ],
+          "snippet": "964 484",
+          "label_matched": "Chiffres d'affaires nets*"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 364789.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.7184,
+            0.4039,
+            0.7941,
+            0.417
+          ],
+          "snippet": "364 789",
+          "label_matched": "Autres achats et charges externes (3) (6 bis) *"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 1717114.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.7059,
+            0.917,
+            0.8011,
+            0.9304
+          ],
+          "snippet": "1 717 114",
+          "label_matched": "TOTAL GÉNÉRAL (I à VI)"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 1000000.0,
+          "unit": "EUR",
+          "page": 5,
+          "bbox": [
+            0.6994,
+            0.1045,
+            0.7962,
+            0.1193
+          ],
+          "snippet": "1 000 000",
+          "label_matched": "Capital social oou.individuel (1)* (Dont vers :..0.....)"
+        }
+      ],
+      "run": {
+        "seconds": 0.64,
+        "pages": 30,
+        "seconds_per_page": 0.021
+      }
+    },
+    {
+      "pdf": "data/504304205/bilans/pdf/bilan_2024-08-06_66cd893cedec9b09d50191e8.pdf",
+      "siren": "504304205",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 1689390.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.6959,
+            0.8695,
+            0.7842,
+            0.8803
+          ],
+          "snippet": "1 689 390",
+          "label_matched": "TOTAL GÉNÉRAL (I à VI)"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 1000000.0,
+          "unit": "EUR",
+          "page": 5,
+          "bbox": [
+            0.7208,
+            0.1197,
+            0.8091,
+            0.1308
+          ],
+          "snippet": "1 000 000",
+          "label_matched": "Capital social ou individuel (1)* (Dont versé : ."
+        }
+      ],
+      "run": {
+        "seconds": 0.57,
+        "pages": 33,
+        "seconds_per_page": 0.017
+      }
+    },
+    {
+      "pdf": "data/401009741/bilans/pdf/bilan_2022-11-30_63e881158be6eb9f9d1ff975.pdf",
+      "siren": "401009741",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 38537.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.8804,
+            0.5148,
+            0.9458,
+            0.5273
+          ],
+          "snippet": "38 537",
+          "label_matched": "- dotations aux amortissements*"
+        },
+        {
+          "field_key": "PL_REVENUE_FRGAAP",
+          "value": 30117.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.693,
+            0.2149,
+            0.7576,
+            0.2271
+          ],
+          "snippet": "30 117",
+          "label_matched": "Chiffres d’affaires nets *"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 297253.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.8708,
+            0.4352,
+            0.945,
+            0.4477
+          ],
+          "snippet": "297 253",
+          "label_matched": "Autres achats et charges externes (3) (6 bis)*"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 810874.0,
+          "unit": "EUR",
+          "page": 2,
+          "bbox": [
+            0.7409,
+            0.9164,
+            0.8077,
+            0.9281
+          ],
+          "snippet": "810 874",
+          "label_matched": "TOTAL GÉNÉRAL (I à VI)"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 30348.0,
+          "unit": "EUR",
+          "page": 3,
+          "bbox": [
+            0.4497,
+            0.1484,
+            0.5294,
+            0.1638
+          ],
+          "snippet": ".30 348)",
+          "label_matched": "Capital social ou individuel (1)* (Dont versé :"
+        }
+      ],
+      "run": {
+        "seconds": 0.7,
+        "pages": 16,
+        "seconds_per_page": 0.044
+      }
+    },
+    {
+      "pdf": "data/401009741/bilans/pdf/bilan_2023-11-20_65784e5da67d84faf4042736.pdf",
+      "siren": "401009741",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+          "value": 4.9965916252148356e+22,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.8749,
+            0.4741,
+            0.9513,
+            0.6093
+          ],
+          "snippet": "499 659 162 521 48 352 908 669",
+          "label_matched": "DOTATIONS D'EXPLOITATION Sur actif circulant : dotations aux provisions*"
+        },
+        {
+          "field_key": "PL_REVENUE_FRGAAP",
+          "value": 2524.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.7031,
+            0.2094,
+            0.7599,
+            0.2248
+          ],
+          "snippet": "2 524",
+          "label_matched": "Chiffres d'affaires nets *"
+        },
+        {
+          "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
+          "value": 329158.0,
+          "unit": "EUR",
+          "page": 6,
+          "bbox": [
+            0.8757,
+            0.4337,
+            0.9505,
+            0.4468
+          ],
+          "snippet": "329 158",
+          "label_matched": "Autres achats et charges externes (3) (6 bis)*"
+        },
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 767254.0,
+          "unit": "EUR",
+          "page": 4,
+          "bbox": [
+            0.743,
+            0.9199,
+            0.8097,
+            0.9321
+          ],
+          "snippet": "767 254",
+          "label_matched": "TOTAL GÉNÉRAL (I à VI)"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 3360.0,
+          "unit": "EUR",
+          "page": 5,
+          "bbox": [
+            0.4497,
+            0.1478,
+            0.5286,
+            0.1632
+          ],
+          "snippet": ".3...360...)",
+          "label_matched": "Capital social ou individuel (1)* (Dont versé :"
+        }
+      ],
+      "run": {
+        "seconds": 0.38,
+        "pages": 16,
+        "seconds_per_page": 0.024
+      }
+    },
+    {
+      "pdf": "data/401009741/bilans/pdf/bilan_2025-10-03_68f0a715f28d8aaf48046416.pdf",
+      "siren": "401009741",
+      "fiscal_year_end": null,
+      "fields": [
+        {
+          "field_key": "BS_TOTAL_ASSETS_FRGAAP",
+          "value": 795679.0,
+          "unit": "EUR",
+          "page": 2,
+          "bbox": [
+            0.7577,
+            0.9253,
+            0.8246,
+            0.9387
+          ],
+          "snippet": "795 679",
+          "label_matched": "TOTAL GÉNÉRAL (I à VI) CO"
+        },
+        {
+          "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
+          "value": 24960.0,
+          "unit": "EUR",
+          "page": 3,
+          "bbox": [
+            0.4609,
+            0.1532,
+            0.5448,
+            0.17
+          ],
+          "snippet": "24960)",
+          "label_matched": "Capital social ou individuel (1)* (Dont versé : "
+        }
+      ],
+      "run": {
+        "seconds": 0.31,
+        "pages": 15,
+        "seconds_per_page": 0.021
+      }
+    }
+  ],
+  "run": {
+    "total_seconds": 6.54,
+    "total_pages": 415,
+    "seconds_per_page": 0.016,
+    "cost_eur_per_page": 0,
+    "model": "none — rule-based extraction on provided OCR",
+    "notes": "No external API keys needed. Uses provided OCR + rule-based matching."
+  }
+}
