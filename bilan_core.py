@@ -74,7 +74,7 @@ def parse_number(text: str):
     except ValueError:
         return None
 
-def merge_horizontal_lines(ocr_lines: list[dict], max_x_gap: float = 35.0) -> list[dict]:
+def merge_horizontal_lines(ocr_lines: list[dict], max_x_gap: float = 60.0) -> list[dict]:
     if not ocr_lines:
         return []
 
@@ -86,6 +86,12 @@ def merge_horizontal_lines(ocr_lines: list[dict], max_x_gap: float = 35.0) -> li
         y_center = (y0 + y1) / 2.0
         height = max(y1 - y0, 1.0)
         return x0, x1, y0, y1, y_center, height
+
+    def is_numeric_fragment(text: str) -> bool:
+        cleaned = text.strip()
+        if not cleaned:
+            return False
+        return bool(re.match(r'^[\d\s\u00a0.,()+-]+$', cleaned))
 
     sorted_lines = sorted(ocr_lines, key=lambda l: (get_geom(l)[4], get_geom(l)[0]))
 
@@ -105,7 +111,13 @@ def merge_horizontal_lines(ocr_lines: list[dict], max_x_gap: float = 35.0) -> li
 
         x_gap = cx0 - px1
 
-        if same_line and (-10 <= x_gap <= max_x_gap):
+        both_numeric = is_numeric_fragment(prev["text"]) and is_numeric_fragment(line["text"])
+        if both_numeric:
+            effective_gap = min(max_x_gap, 45)
+        else:
+            effective_gap = max_x_gap
+
+        if same_line and (-10 <= x_gap <= effective_gap):
             merged_text = f"{prev['text']} {line['text']}"
             new_x0 = min(px0, cx0)
             new_y0 = min(py0, cy0)
@@ -144,14 +156,17 @@ def extract_number_from_line(text: str):
     
     return None
 
-def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list, column_index: int = 0):
+def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list, column_index: int = 2):
     label_ys = [p[1] for p in label_line["polygon"]]
     label_y_center = (min(label_ys) + max(label_ys)) / 2
     label_height = max(label_ys) - min(label_ys)
     
     tolerance = max(label_height * 1.0, 20)
     
-    candidates = []
+    # Step 1: collect all numeric cells on the same row, to the right of the label
+    label_x_right = max(p[0] for p in label_line["polygon"])
+    
+    raw_cells = []
     for line in all_lines:
         if line is label_line:
             continue
@@ -162,30 +177,68 @@ def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list, co
         line_y_center = (min(line_ys) + max(line_ys)) / 2
         
         if abs(line_y_center - label_y_center) <= tolerance:
-            value = extract_number_from_line(line["text"])
-            if value is not None:
-                line_x = max(p[0] for p in line["polygon"])
-                candidates.append({
-                    "value": value,
+            line_xs = [p[0] for p in line["polygon"]]
+            x_left = min(line_xs)
+            x_right = max(line_xs)
+            if x_right > label_x_right:
+                raw_cells.append({
+                    "text": line["text"],
                     "source_line": line,
-                    "x_right": line_x
+                    "x_left": x_left,
+                    "x_right": x_right,
                 })
     
-    if candidates:
-        label_x_right = max(p[0] for p in label_line["polygon"])
-        right_candidates = [c for c in candidates if c["x_right"] > label_x_right]
-        
-        if right_candidates:
-            right_candidates.sort(key=lambda c: c["x_right"])
-            
-            idx = min(column_index, len(right_candidates) - 1)
-            best = right_candidates[idx]
-        else:
-            best = min(candidates, key=lambda c: abs(c["x_right"] - label_x_right))
-        
-        return {"value": best["value"], "source_line": best["source_line"]}
+    if not raw_cells:
+        return None
     
-    return None
+    raw_cells.sort(key=lambda c: c["x_left"])
+    
+    COLUMN_GAP_THRESHOLD = 80  # pixels — gap between columns in a liasse
+    
+    groups = []
+    current_group = [raw_cells[0]]
+    
+    for cell in raw_cells[1:]:
+        prev = current_group[-1]
+        gap = cell["x_left"] - prev["x_right"]
+        
+        if gap <= COLUMN_GAP_THRESHOLD:
+            current_group.append(cell)
+        else:
+            groups.append(current_group)
+            current_group = [cell]
+    
+    groups.append(current_group)  
+    
+    columns = []
+    for group in groups:
+        merged_text = " ".join(c["text"] for c in group)
+        value = extract_number_from_line(merged_text)
+        if value is not None:
+            # Use the bbox that spans the whole group
+            all_x_left = min(c["x_left"] for c in group)
+            all_x_right = max(c["x_right"] for c in group)
+            # Use the first cell's source_line for bbox (or build a merged one)
+            merged_polygon = [
+                [all_x_left, min(p[1] for c in group for p in c["source_line"]["polygon"])],
+                [all_x_right, min(p[1] for c in group for p in c["source_line"]["polygon"])],
+                [all_x_right, max(p[1] for c in group for p in c["source_line"]["polygon"])],
+                [all_x_left, max(p[1] for c in group for p in c["source_line"]["polygon"])],
+            ]
+            columns.append({
+                "value": value,
+                "source_line": {
+                    "text": merged_text,
+                    "polygon": merged_polygon,
+                },
+            })
+    
+    if not columns:
+        return None
+
+    idx = len(columns) - column_index
+    idx = max(0, min(idx, len(columns) - 1))
+    return {"value": columns[idx]["value"], "source_line": columns[idx]["source_line"]}
 
 def load_ocr_pages(ocr_dir: str) -> list[dict]:
     ocr_path = pathlib.Path(ocr_dir)

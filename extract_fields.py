@@ -68,6 +68,18 @@ def detect_page_sections(pages: list[dict]) -> dict:
 
 FIELDS = [
     {
+        "field_key": "PL_DEPRECIATION_AMORTIZATION_FRGAAP",
+        "queries": [
+            "total dotations d'exploitation",
+            "total dotations d exploitation",
+            "dotations d'exploitation",
+            "dotations aux amortissements",
+        ],
+        "section": "compte_resultat",
+        "unit_type": "monetary",
+        "column_from_right": 2,
+    },
+    {
         "field_key": "PL_REVENUE_FRGAAP",
         "queries": [
             "chiffres d'affaires nets",
@@ -75,7 +87,7 @@ FIELDS = [
         ],
         "section": "compte_resultat",
         "unit_type": "monetary",
-        "column_index": 2
+        "column_from_right": 2,  
     },
     {
         "field_key": "PL_PERSONNEL_COSTS_FRGAAP",
@@ -84,6 +96,7 @@ FIELDS = [
         ],
         "section": "compte_resultat",
         "unit_type": "monetary",
+        "column_from_right": 2,
     },
     {
         "field_key": "PL_EXT_SERVICES_COSTS_FRGAAP",
@@ -93,8 +106,9 @@ FIELDS = [
         ],
         "section": "compte_resultat",
         "unit_type": "monetary",
+        "column_from_right": 2,
     },
-{
+    {
         "field_key": "BS_TOTAL_ASSETS_FRGAAP",
         "queries": [
             "total actif",
@@ -105,7 +119,7 @@ FIELDS = [
         ],
         "section": "bilan_actif",
         "unit_type": "monetary",
-        "column_index": 2
+        "column_from_right": 2,  
     },
     {
         "field_key": "BS_TOTAL_EQUITY_FRGAAP",
@@ -115,6 +129,7 @@ FIELDS = [
         ],
         "section": "bilan_passif",
         "unit_type": "monetary",
+        "column_from_right": 2,
     },
     {
         "field_key": "BS_CAPITAL_EQUITY_FRGAAP",
@@ -124,6 +139,7 @@ FIELDS = [
         ],
         "section": "bilan_passif",
         "unit_type": "monetary",
+        "column_from_right": 2,
     },
 ]
 
@@ -131,7 +147,7 @@ def extract_one_field(
     field_desc: dict, pages: list, pdf_path: str, page_sections: dict
 ) -> dict | None:
     target_section = field_desc.get("section")
-    target_column = field_desc.get("column_index", 0) 
+    target_column = field_desc.get("column_index", 2) 
 
     for query in field_desc["queries"]:
         for page_data in pages:
@@ -152,8 +168,16 @@ def extract_one_field(
                 text_line = label_line["text"].strip()
                 if re.match(r"^\d+\.\d+", text_line):
                     continue
+                has_n1 = False
+                for l in ocr_lines:
+                    t = l["text"].lower()
+                    if any(k in t for k in ["n-1", "n - 1", "précédent", "precedent", "exercice n-1"]):
+                        has_n1 = True
+                        break
 
-                result = find_value_near_label(ocr_lines, label_line, ocr_lines, column_index=target_column) 
+                effective_column = target_column if has_n1 else max(target_column - 1, 1)
+
+                result = find_value_near_label(ocr_lines, label_line, ocr_lines, column_index=effective_column) 
                 
                 if result and result["value"] is not None:
                     # ... o resto continua igual ...
@@ -207,9 +231,7 @@ def process_document(siren: str, doc_id: str, deposit_date: str) -> dict:
 if __name__ == "__main__":
     # testing
     docs = [
-        ("445070311", "63e2481c916269756a09542b", "2022-02-14"),
-        ("445070311", "65a4095d5fd178b16b09b860", "2023-11-21"),
-        ("445070311", "6860f28ca0138eae340c7453", "2025-05-15"),
+        ("504304205", "63e13943526e1f30cd100db6", "2018-10-24"),
     ]
 
     for siren, doc_id, date in docs:
