@@ -20,7 +20,7 @@ python3 run_pipeline.py
 1. **Loads OCR** from the provided JSON files (one per page), merging horizontally adjacent text fragments into logical lines. For numeric fragments specifically, the merge uses a wider tolerance, since digits in dense forms are often split across multiple OCR bounding boxes — for example, "1 987 385" arriving as three separate boxes ("1", "987", "385"). Without this, each fragment would be counted as a separate column, breaking column selection.
 2. **Detects the unit** (EUR vs kEUR) by scanning for declaration phrases like "Les montants sont indiqués en K€", with accent-tolerant patterns since OCR drops French accents inconsistently.
 3. **Maps each page to a financial section** (Bilan Actif, Bilan Passif, Compte de Résultat) by looking for short header lines — this prevents matching field labels that appear in narrative/prose pages.
-4. **Extracts each field** by searching for its label in the OCR of the relevant section. Numeric cells on the same row are grouped into logical columns (fragments within 80px are treated as parts of the same number; gaps >80px mark column boundaries). The pipeline then selects the correct column by counting from the right, with automatic detection of whether a N-1 column exists.
+4. **Extracts each field** by searching for its label in the OCR of the relevant section. Numeric cells on the same row are grouped into logical columns (fragments within 80px are treated as parts of the same number; gaps >80px mark column boundaries). The pipeline then selects the correct column by counting from the right.
 
 ## Results
 
@@ -28,7 +28,7 @@ python3 run_pipeline.py
   - 4 reliable: `BS_CAPITAL_EQUITY_FRGAAP`, `PL_EXT_SERVICES_COSTS_FRGAAP`, `BS_TOTAL_ASSETS_FRGAAP`, `PL_REVENUE_FRGAAP`
   - 3 with caveats: `PL_PERSONNEL_COSTS_FRGAAP`, `BS_TOTAL_EQUITY_FRGAAP`, `PL_DEPRECIATION_AMORTIZATION_FRGAAP`
 - **Coverage:** 62 / 105 field-document pairs found (59%)
-- **Time:** ~6.6 seconds total, 0.016s per page
+- **Time:** ~6.5 seconds total, 0.016s per page
 - **Cost:** €0.00 per page (no API calls)
 
 ### Fields with caveats
@@ -98,4 +98,4 @@ Moreover, I should have been more careful with the initial inspection of the doc
 - `.env.example` — environment variables (none needed for this pipeline)
 
 ## Screen recording
-[falta o link]
+[https://drive.google.com/file/d/1yKhai1J-WkNbb3zj2BgoTlseLhemUm2E/view?usp=sharing]

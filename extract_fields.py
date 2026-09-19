@@ -168,17 +168,13 @@ def extract_one_field(
                 text_line = label_line["text"].strip()
                 if re.match(r"^\d+\.\d+", text_line):
                     continue
-                has_n1 = False
-                for l in ocr_lines:
-                    t = l["text"].lower()
-                    if any(k in t for k in ["n-1", "n - 1", "précédent", "precedent", "exercice n-1"]):
-                        has_n1 = True
-                        break
+            for label_line in matches:
+                text_line = label_line["text"].strip()
+                if re.match(r"^\d+\.\d+", text_line):
+                    continue
 
-                effective_column = target_column if has_n1 else max(target_column - 1, 1)
+                result = find_value_near_label(ocr_lines, label_line, ocr_lines, column_index=target_column)
 
-                result = find_value_near_label(ocr_lines, label_line, ocr_lines, column_index=effective_column) 
-                
                 if result and result["value"] is not None:
                     # ... o resto continua igual ...
                     w_px, h_px = get_page_size_at_300dpi(pdf_path, page_num)
@@ -229,9 +225,10 @@ def process_document(siren: str, doc_id: str, deposit_date: str) -> dict:
 
 
 if __name__ == "__main__":
-    # testing
     docs = [
-        ("504304205", "63e13943526e1f30cd100db6", "2018-10-24"),
+        ("445070311", "63e2481c916269756a09542b", "2022-02-14"),
+        ("445070311", "65a4095d5fd178b16b09b860", "2023-11-21"),
+        ("445070311", "6860f28ca0138eae340c7453", "2025-05-15"),
     ]
 
     for siren, doc_id, date in docs:
