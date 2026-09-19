@@ -4,6 +4,13 @@ import pymupdf
 import difflib
 import re
 
+def is_isolated_number_cell(text: str) -> bool:
+    text = text.strip()
+
+    if re.search(r"[a-zA-ZÀ-ÿ]{2,}", text):
+        return False
+    return True
+
 def detect_unit_ker(pages: list[dict]) -> str:
     keur_patterns = [
         "montants sont indiqués en k",     
@@ -137,24 +144,19 @@ def extract_number_from_line(text: str):
     
     return None
 
-def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list):
-    # first try: number in the same bbox
-    # value = extract_number_from_line(label_line["text"])
-    # if value is not None:
-    #    return {"value": value, "source_line": label_line}
-
-    # second try: searching for different bboxes with the same (approximately) y
+def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list, column_index: int = 0):
     label_ys = [p[1] for p in label_line["polygon"]]
     label_y_center = (min(label_ys) + max(label_ys)) / 2
     label_height = max(label_ys) - min(label_ys)
     
-    # if the center is less than 1x the height of the label
-    tolerance = max(label_height * 1.0, 20)  # minimum 20 pixels
+    tolerance = max(label_height * 1.0, 20)
     
     candidates = []
     for line in all_lines:
         if line is label_line:
-            continue  # thats the label itself and not the number
+            continue
+        if not is_isolated_number_cell(line["text"]):
+            continue
         
         line_ys = [p[1] for p in line["polygon"]]
         line_y_center = (min(line_ys) + max(line_ys)) / 2
@@ -162,7 +164,6 @@ def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list):
         if abs(line_y_center - label_y_center) <= tolerance:
             value = extract_number_from_line(line["text"])
             if value is not None:
-                # just using x to sort after, to get the number in the left 
                 line_x = max(p[0] for p in line["polygon"])
                 candidates.append({
                     "value": value,
@@ -172,13 +173,13 @@ def find_value_near_label(ocr_lines: list, label_line: dict, all_lines: list):
     
     if candidates:
         label_x_right = max(p[0] for p in label_line["polygon"])
-        
-        # only candidates to the RIGHT of the label
         right_candidates = [c for c in candidates if c["x_right"] > label_x_right]
         
         if right_candidates:
-            # closest to the right, not the furthest
-            best = min(right_candidates, key=lambda c: c["x_right"])
+            right_candidates.sort(key=lambda c: c["x_right"])
+            
+            idx = min(column_index, len(right_candidates) - 1)
+            best = right_candidates[idx]
         else:
             best = min(candidates, key=lambda c: abs(c["x_right"] - label_x_right))
         
@@ -195,7 +196,7 @@ def load_ocr_pages(ocr_dir: str) -> list[dict]:
             page_data = json.load(f)
             
             if "ocr" in page_data:
-                page_data["ocr"] = merge_horizontal_lines(page_data["ocr"])
+                page_data["ocr"] = merge_horizontal_lines(page_data["ocr"], max_x_gap=60)
 
             pages.append(page_data)
 

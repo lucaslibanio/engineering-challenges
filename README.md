@@ -15,8 +15,6 @@ pip install pymupdf pillow
 python3 run_pipeline.py
 ```
 
-No API keys needed — this is a rule-based pipeline that runs entirely on the provided OCR.
-
 ## What the pipeline does
 
 1. **Loads OCR** from the provided JSON files (one per page), merging horizontally adjacent text fragments into logical lines.

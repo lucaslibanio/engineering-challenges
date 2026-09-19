@@ -13,23 +13,23 @@ from bilan_core import (
 
 
 def normalize_text(text: str) -> str:
-    """Remove accents and convert to lowercase."""
     text = unicodedata.normalize("NFKD", text)
     return "".join([c for c in text if not unicodedata.combining(c)]).lower()
 
 
 def detect_page_sections(pages: list[dict]) -> dict:
-    """
-    For each page, detects which financial section it belongs to.
-    Only matches anchors in SHORT lines (likely headers, not prose).
-    """
     section_anchors = {
         "bilan_actif": [
             "bilan actif",
             "actif immobilise",
             "total actif circulant",
             "total actif immobilise",
+            "actif",                          
+            "actif circulant",                
+            "total general (i a vi)",         
+            "immobilisations incorporelles",  
         ],
+        # ...
         "bilan_passif": [
             "bilan passif",
             "situation nette",
@@ -75,6 +75,7 @@ FIELDS = [
         ],
         "section": "compte_resultat",
         "unit_type": "monetary",
+        "column_index": 2
     },
     {
         "field_key": "PL_PERSONNEL_COSTS_FRGAAP",
@@ -93,14 +94,18 @@ FIELDS = [
         "section": "compte_resultat",
         "unit_type": "monetary",
     },
-    {
+{
         "field_key": "BS_TOTAL_ASSETS_FRGAAP",
         "queries": [
+            "total actif",
             "total général",
+            "total général (I à VI)",
             "total general",
+            "total general (I à VI)",
         ],
         "section": "bilan_actif",
         "unit_type": "monetary",
+        "column_index": 2
     },
     {
         "field_key": "BS_TOTAL_EQUITY_FRGAAP",
@@ -126,12 +131,12 @@ def extract_one_field(
     field_desc: dict, pages: list, pdf_path: str, page_sections: dict
 ) -> dict | None:
     target_section = field_desc.get("section")
+    target_column = field_desc.get("column_index", 0) 
 
     for query in field_desc["queries"]:
         for page_data in pages:
             page_num = page_data["page"]
 
-            # Skip pages that don't belong to this field's section
             if target_section and target_section not in page_sections.get(page_num, set()):
                 continue
 
@@ -144,13 +149,14 @@ def extract_one_field(
                     matches = [fuzzy[0]["line"]]
 
             for label_line in matches:
-                # Skip section headers like "3.3 Résultat..."
                 text_line = label_line["text"].strip()
                 if re.match(r"^\d+\.\d+", text_line):
                     continue
 
-                result = find_value_near_label(ocr_lines, label_line, ocr_lines)
+                result = find_value_near_label(ocr_lines, label_line, ocr_lines, column_index=target_column) 
+                
                 if result and result["value"] is not None:
+                    # ... o resto continua igual ...
                     w_px, h_px = get_page_size_at_300dpi(pdf_path, page_num)
                     bbox = polygon_to_bbox_normalized(
                         result["source_line"]["polygon"], w_px, h_px
