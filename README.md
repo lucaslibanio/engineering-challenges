@@ -97,5 +97,10 @@ Moreover, I should have been more careful with the initial inspection of the doc
 - `results.json` — extraction output matching the schema
 - `.env.example` — environment variables (none needed for this pipeline)
 
+## Time Dedicated to the Project
+~ 10h until ~ 16h
+~ 21h30 until ~ 23h30
+Approximately 8h of work
+
 ## Screen recording
 [https://drive.google.com/file/d/1yKhai1J-WkNbb3zj2BgoTlseLhemUm2E/view?usp=sharing]
